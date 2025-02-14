@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Report Generator</title>
+    <style>
+        /* General Reset */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            max-width: 1200px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        header h1 {
+            color: #007BFF;
+        }
+
+        header p {
+            color: #555;
+        }
+
+        .input-form h2 {
+            color: #007BFF;
+            margin-bottom: 10px;
+        }
+
+        .input-form label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        .input-form input, .input-form textarea, .input-form select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .input-form button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .input-form button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Health Report Generator</h1>
+            <p>Track weekly and monthly health updates based on your input.</p>
+        </header>
+
+        <section class="input-form">
+            <h2>Enter Your Details</h2>
+            <form id="healthForm">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" placeholder="Enter your name" required>
+
+                <label for="age">Age:</label>
+                <input type="number" id="age" name="age" placeholder="Enter your age" required>
+
+                <label for="prescription">Doctor's Prescription:</label>
+                <textarea id="prescription" name="prescription" placeholder="Enter doctor's notes or medicines" required></textarea>
+
+                <label for="healthMetrics">Health Metrics:</label>
+                <textarea id="healthMetrics" name="healthMetrics" placeholder="e.g., BP: 120/80, Glucose: 95mg/dL" required></textarea>
+
+                <label for="duration">Generate Report For:</label>
+                <select id="duration" name="duration">
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+
+                <button type="button" id="generateReport">Generate Report</button>
+            </form>
+        </section>
+    </div>
+
+    <script>
+        document.getElementById('generateReport').addEventListener('click', function () {
+            // Collect form data
+            const name = document.getElementById('name').value;
+            const age = document.getElementById('age').value;
+            const prescription = document.getElementById('prescription').value;
+            const healthMetrics = document.getElementById('healthMetrics').value;
+            const duration = document.getElementById('duration').value;
+
+            // Store data in localStorage for simplicity
+            localStorage.setItem('healthData', JSON.stringify({ name, age, prescription, healthMetrics, duration }));
+
+            // Redirect to the results page
+            window.location.href = 'result.html';
+        });
+    </script>
+</body>
+</html>

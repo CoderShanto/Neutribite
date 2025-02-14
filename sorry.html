@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Not Found</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* General Reset */
+/* General Reset */
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    box-sizing: border-box;
+    background-color: #f4f4f9;
+    color: #333;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Container Styling */
+.not-found-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    background: linear-gradient(135deg, #ff7eb3, #ff758c, #ffd54f);
+    animation: bgAnimation 6s linear infinite;
+}
+
+/* Background Animation */
+@keyframes bgAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Message Box */
+.message-box {
+    background: linear-gradient(135deg, #ffffff, #ffeced, #fffbf1);
+    animation: cardGlow 3s ease-in-out infinite;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+    width: 90%;
+    transform: scale(1);
+    transition: transform 0.3s ease-in-out;
+}
+
+.message-box:hover {
+    transform: scale(1.05);
+}
+
+/* Card Glow Animation */
+@keyframes cardGlow {
+    0% { box-shadow: 0 5px 15px rgba(255, 118, 117, 0.5); }
+    50% { box-shadow: 0 10px 30px rgba(255, 200, 55, 0.7); }
+    100% { box-shadow: 0 5px 15px rgba(255, 118, 117, 0.5); }
+}
+
+.message-box h1 {
+    font-size: 2.5rem;
+    margin: 10px 0;
+    color: #2c3e50;
+}
+
+.message-box p {
+    font-size: 1rem;
+    margin: 10px 0;
+    color: #555;
+}
+
+.message-box .sub-text {
+    font-size: 0.9rem;
+    color: #888;
+    margin-bottom: 20px;
+}
+
+.message-box i {
+    color: #3498db;
+    margin-bottom: 20px;
+}
+
+/* Buttons */
+.request-button, .home-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin: 10px;
+    background: linear-gradient(135deg, #3498db, #6dd5fa, #a2e5f8);
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.request-button:hover, .home-button:hover {
+    background: linear-gradient(135deg, #6dd5fa, #3498db);
+    transform: scale(1.1);
+}
+/* Buttons (also apply styles to <a>) */
+    .request-button, .home-button {
+    display: inline-block; /* Ensures proper button-like appearance */
+    padding: 10px 20px;
+    text-decoration: none; /* Removes underline from <a> */
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin: 10px;
+    background: linear-gradient(135deg, #3498db, #6dd5fa, #a2e5f8);
+    color: #fff;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.request-button:hover, .home-button:hover {
+    background: linear-gradient(135deg, #6dd5fa, #3498db);
+    transform: scale(1.1);
+}
+
+
+    </style>
+</head>
+<body>
+    <div class="not-found-container">
+        <div class="message-box">
+            <i class="fas fa-search fa-3x"></i>
+            <h1>Item Not Found</h1>
+            <p>We couldn't find what you're looking for. But don't worry, we're here to help!</p>
+            <p class="sub-text">If you'd like, we can review and add the item soon.</p>
+            
+            <!-- Request Item Button -->
+            <a href="users_area/profile.php?contact_us" class="request-button">
+                Request This Item
+            </a>
+            
+            <!-- Go to Homepage Button -->
+            <a href="display_all.php" class="home-button">
+                Go to Homepage
+            </a>
+        </div>
+    </div>
+</body>
+
+</html>

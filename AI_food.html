@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice Assistant with KNN</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .voice-assistant-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #3a5adb;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .voice-assistant-btn:hover {
+            background-color: #218838;
+            transform: scale(1.1);
+        }
+
+        .voice-assistant-btn:active {
+            background-color: #1e7e34;
+            transform: scale(1);
+        }
+
+        #assistant-popup {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 250px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+        }
+
+        #assistant-popup input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        #assistant-popup button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #assistant-popup button:hover {
+            background-color: #218838;
+        }
+
+        #assistant-popup .close-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            color: #888;
+        }
+
+        .stop-btn {
+            background-color: #dc3545;
+            padding: 6px 16px;
+            font-size: 12px;
+            border-radius: 50px;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .stop-btn:hover {
+            background-color: #c82333;
+            transform: scale(1.1);
+        }
+
+        .stop-btn:active {
+            background-color: #bd2130;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body>
+    <button class="voice-assistant-btn" onclick="toggleAssistantPopup()">🤖</button>
+    <div id="assistant-popup">
+        <div class="close-btn" onclick="closeAssistantPopup()">×</div>
+        <h3>AI Assistant</h3>
+        <input type="text" id="assistant-input" placeholder="Ask me something..." />
+        <button onclick="processInput()">Ask</button>
+        <button class="stop-btn" onclick="stopListening()">Stop</button>
+        <div id="response"></div>
+    </div>
+
+    <script>
+        let assistantPopup = document.getElementById("assistant-popup");
+        let assistantInput = document.getElementById("assistant-input");
+        let responseDiv = document.getElementById("response");
+    
+        let synth = window.speechSynthesis;
+        let voices = [];
+    
+        function populateVoiceList() {
+            voices = synth.getVoices();
+            let femaleVoice = voices.find(voice => voice.name.toLowerCase().includes('female'));
+            synth.voice = femaleVoice || voices[0];
+        }
+    
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = populateVoiceList;
+        }
+    
+        function toggleAssistantPopup() {
+            assistantPopup.style.display = assistantPopup.style.display === "block" ? "none" : "block";
+            startListening();
+        }
+    
+        function closeAssistantPopup() {
+            assistantPopup.style.display = "none";
+            stopListening();
+        }
+    
+        // Friendly conversation dataset
+        const conversationDataset = [
+            { input: "hello", response: "Hello! How can I assist you today?" },
+            { input: "how are you", response: "I'm just a program, but I'm feeling great! How about you?" },
+            { input: "what's your name", response: "I'm your friendly food delivery assistant!" },
+            { input: "thank you", response: "You're welcome! Happy to help!" },
+            { input: "bye", response: "Goodbye! Have a great day!" },
+            // Add more friendly responses here
+        ];
+    
+        // Commands for redirection
+        const commandDataset = [
+            { input: "go to home page", response: "Redirecting to the home page.", url: "display_all.php" },
+            { input: "can you show me some offers", response: "Why not sir? Here are some exciting offers we've secured just for you.", url: "offer.php" },
+            { input: "go to my profile page", response: "Sure sir, Redirecting to your profile page.", url: "users_area/profile.php" },
+            { input: "show my orders", response: "Taking you to your orders page.", url: "users_area/profile.php?my_orders" },
+            { input: "do you have mango? show me some variety if you have", response: "Absolutely! We're stocked with a variety of delicious mangoes. You can find Alphonso, Kesar, and Totapuri mangoes in our inventory.", url: "products_details.php?product_id=50" },
+            { input: "i want orange, do you have? show me some variety if you have", response: "Indeed, we have oranges! We offer several varieties, including Valencia, Navel, and Blood oranges. You can learn more about each type here", url: "products_details.php?product_id=49" },
+            { input: "we need egg", response: "Unfortunately, we don't have any eggs in stock at this time. However, we will be restocking soon and will let you know when they are back in stock", url: "sorry.html" },
+            { input: "let me see the cart", response: "sure sir,here is your cart page", url: "cart.php" },
+        ];
+    
+        // Main function to process input
+        function processInput() {
+            let query = assistantInput.value.toLowerCase().trim();
+            if (query) {
+                let command = knnClassifier(query, [...conversationDataset, ...commandDataset]);
+                if (command.url) {
+                    speakAnswer(command.response);
+                    redirectToPage(command.url);
+                } else {
+                    speakAnswer(command.response);
+                }
+                assistantInput.value = "";
+            } else {
+                responseDiv.innerText = "Please ask something!";
+            }
+        }
+    
+        // KNN Algorithm for classification
+        function knnClassifier(input, dataset) {
+            const inputVector = input.split(" ");
+            let closestDistance = Infinity;
+            let predictedCommand = { response: "I don't understand the command." };
+    
+            dataset.forEach(item => {
+                let commandVector = item.input.split(" ");
+                let distance = cosineSimilarity(inputVector, commandVector);
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    predictedCommand = item;
+                }
+            });
+    
+            return predictedCommand;
+        }
+    
+        function cosineSimilarity(vecA, vecB) {
+            let intersection = 0;
+            let normA = 0;
+            let normB = 0;
+            vecA.forEach(wordA => {
+                let countA = vecA.filter(x => x === wordA).length;
+                normA += Math.pow(countA, 2);
+                if (vecB.includes(wordA)) {
+                    intersection += countA * vecB.filter(x => x === wordA).length;
+                }
+            });
+            vecB.forEach(wordB => {
+                let countB = vecB.filter(x => x === wordB).length;
+                normB += Math.pow(countB, 2);
+            });
+            return 1 - (intersection / (Math.sqrt(normA) * Math.sqrt(normB)));
+        }
+    
+        function redirectToPage(url) {
+            responseDiv.innerText = `Redirecting to ${url}`;
+            window.location.href = url;
+        }
+    
+        function speakAnswer(answer) {
+            let speech = new SpeechSynthesisUtterance();
+            speech.text = answer;
+            synth.speak(speech);
+        }
+    
+        let recognition;
+        let isListening = false;
+    
+        function startListening() {
+            if (!("webkitSpeechRecognition" in window)) {
+                alert("Sorry, your browser doesn't support speech recognition.");
+                return;
+            }
+    
+            recognition = new webkitSpeechRecognition();
+            recognition.lang = "en-US";
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+    
+            recognition.onstart = function () {
+                isListening = true;
+                responseDiv.innerText = "Listening...";
+            };
+    
+            recognition.onresult = function (event) {
+                let result = event.results[0][0].transcript.toLowerCase();
+                assistantInput.value = result;
+                processInput();
+            };
+    
+            recognition.onerror = function (event) {
+                responseDiv.innerText = "Error occurred: " + event.error;
+            };
+    
+            recognition.start();
+        }
+    
+        function stopListening() {
+            if (recognition && isListening) {
+                recognition.stop();
+                isListening = false;
+                responseDiv.innerText = "Stopped listening.";
+            }
+            if (synth.speaking) {
+                synth.cancel();
+            }
+        }
+    </script>
+    
+</body>
+</html>

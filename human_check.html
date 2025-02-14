@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image CAPTCHA</title>
+    <style>
+        /* Basic Styles */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #e5e6e5, #fefffe);
+            animation: bg-animation 8s infinite alternate;
+            overflow: hidden;
+        }
+
+        @keyframes bg-animation {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        /* CAPTCHA Container */
+        .captcha-container {
+            margin: 20px auto;
+            max-width: 600px;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.8);
+            transform: scale(0.95);
+            animation: pop-in 1s forwards ease-out;
+        }
+
+        @keyframes pop-in {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        h1, h2 {
+            color: #4CAF50;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .captcha-instructions {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        /* Grid Styling */
+        .captcha-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            justify-items: center;
+        }
+
+        .captcha-grid img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border: 3px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .captcha-grid img:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.8);
+        }
+
+        .captcha-grid img.selected {
+            border-color: #4CAF50;
+            transform: scale(1.1);
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Button Styling */
+        .verify-btn {
+            padding: 12px 25px;
+            margin-top: 20px;
+            background: linear-gradient(90deg, #56ab2f, #a8e063);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .verify-btn:hover {
+            background: linear-gradient(90deg, #a8e063, #56ab2f);
+            transform: scale(1.1);
+        }
+
+        .verify-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        /* Result Message */
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        /* Locked State */
+        .locked {
+            color: red;
+            font-weight: bold;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="captcha-container" id="captcha-container">
+        <h1>Are You Human?</h1>
+        <h2>Image CAPTCHA</h2>
+        <p class="captcha-instructions">Select all images of a <strong>cat</strong>.</p>
+        <div class="captcha-grid">
+            <img src="images/cat1.jpg" alt="Cat" data-type="cat">
+            <img src="images/dog.jpg" alt="Dog" data-type="dog">
+            <img src="images/cat2.jpg" alt="Cat" data-type="cat">
+            <img src="images/car.jpg" alt="Car" data-type="car">
+            <img src="images/cat3.jpg" alt="Cat" data-type="cat">
+            <img src="images/tree.jpg" alt="Tree" data-type="tree">
+        </div>
+        <button class="verify-btn" onclick="verifyCaptcha()" id="verify-btn">Verify</button>
+        <p class="result" id="captcha-result"></p>
+    </div>
+
+    <script>
+        const images = document.querySelectorAll('.captcha-grid img');
+        const resultElement = document.getElementById('captcha-result');
+        const verifyButton = document.getElementById('verify-btn');
+        let attemptCounter = 0;
+        let lockCounter = 0;
+        let isLocked = false;
+
+        images.forEach(image => {
+            image.addEventListener('click', () => {
+                if (!isLocked) {
+                    image.classList.toggle('selected');
+                }
+            });
+        });
+
+        function verifyCaptcha() {
+            if (isLocked) return;
+
+            const selectedImages = document.querySelectorAll('.captcha-grid img.selected');
+            let isValid = true;
+
+            selectedImages.forEach(img => {
+                if (img.getAttribute('data-type') !== 'cat') {
+                    isValid = false;
+                }
+            });
+
+            const totalCats = document.querySelectorAll('.captcha-grid img[data-type="cat"]').length;
+            if (selectedImages.length !== totalCats) {
+                isValid = false;
+            }
+
+            if (isValid) {
+                resultElement.textContent = "Verification successful! Redirecting...";
+                resultElement.style.color = "green";
+                setTimeout(() => window.location.href = "users_area/user_login.php", 2000);
+            } else {
+                attemptCounter++;
+                if (attemptCounter >= 2) {
+                    lockCounter++;
+                    lockCounter >= 2 ? kickUser() : lockSystem();
+                } else {
+                    resultElement.textContent = `Incorrect selection. Attempt ${attemptCounter}/2.`;
+                    resultElement.style.color = "red";
+                }
+            }
+        }
+
+        function lockSystem() {
+            isLocked = true;
+            verifyButton.disabled = true;
+            resultElement.textContent = "System Locked. Retry in 5 seconds.";
+            let countdown = 5;
+            const interval = setInterval(() => {
+                resultElement.textContent = `Retry in ${countdown--} seconds.`;
+                if (countdown < 0) {
+                    clearInterval(interval);
+                    unlockSystem();
+                }
+            }, 1000);
+        }
+
+        function unlockSystem() {
+            isLocked = false;
+            verifyButton.disabled = false;
+            resultElement.textContent = "You can try again.";
+            resultElement.style.color = "green";
+        }
+
+        function kickUser() {
+            isLocked = true;
+            verifyButton.disabled = true;
+            resultElement.textContent = "You have been detected as a bot.";
+            setTimeout(() => window.location.href = "blocked.html", 3000);
+        }
+    </script>
+</body>
+</html>

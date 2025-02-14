@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOUR PERSONAL AI</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://source.unsplash.com/1600x900/?burger') no-repeat;
+            background-size: cover;
+            background-position: center;
+            animation: backgroundAnimation 20s ease infinite;
+        }
+
+        @keyframes backgroundAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #BB86FC;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        #start-record-btn {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: #03DAC5;
+            color: #121212;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #start-record-btn:hover {
+            background-color: #018786;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: #BB86FC;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>YOUR PERSONAL AI</h1>
+    <button id="start-record-btn">Start Recognition</button>
+    <p id="status"></p>
+    <script>
+        const startRecordBtn = document.getElementById('start-record-btn');
+        const status = document.getElementById('status');
+
+        startRecordBtn.addEventListener('click', () => {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                status.textContent = 'Voice recognition started. Try speaking into the microphone.';
+            };
+
+            recognition.onspeechend = () => {
+                status.textContent = 'Voice recognition stopped.';
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                status.textContent = `You said: ${transcript}`;
+
+                fetch('process_command.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ command: transcript })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const responseText = data.response;
+                    const url = data.url;
+                    status.textContent += `\nServer response: ${responseText}`;
+                    speakResponse(responseText, url);
+                })
+                .catch(error => {
+                    status.textContent += `\nError: ${error}`;
+                });
+            };
+
+            recognition.start();
+        });
+
+        function speakResponse(text, url = null) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            const voices = window.speechSynthesis.getVoices();
+            let femaleVoice = voices.find(voice => /female/i.test(voice.name));
+            if (!femaleVoice) {
+                femaleVoice = voices[0];
+            }
+            utterance.voice = femaleVoice;
+            utterance.pitch = 1;
+            utterance.rate = 1;
+
+            utterance.onend = () => {
+                if (url) {
+                    window.location.href = url;
+                }
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = () => {
+                speakResponse("");
+            };
+        }
+    </script>
+</body>
+</html>

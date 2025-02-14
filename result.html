@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Report</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            max-width: 1200px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        header h1 {
+            color: #007BFF;
+        }
+
+        .report {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f1f1f1;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .report p {
+            margin: 10px 0;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Your Health Report</h1>
+        </header>
+
+        <div class="report" id="reportOutput">
+            <p>Loading report...</p>
+        </div>
+
+        <button onclick="window.location.href='index.html'">Go Back</button>
+    </div>
+
+    <script>
+        // Predefined weekly and monthly plans for diseases
+        const healthPlans = {
+            diabetes: {
+                weekly: [
+                    "Week 1: Monitor glucose levels daily, eat low-glycemic foods, and exercise for 30 minutes.",
+                    "Week 2: Reduce carbohydrate intake, stay hydrated, and perform yoga for stress management.",
+                    "Week 3: Include high-fiber meals, regular walking, and consult your dietician.",
+                ],
+                monthly: [
+                    "Month 1: Strict sugar-free diet, monitor insulin intake, and a balanced fitness routine.",
+                    "Month 2: Advanced glucose monitoring, carb counting with meals, and strength exercises.",
+                    "Month 3: Monthly consultation with a doctor, include vitamins, and ensure 8 hours of sleep daily.",
+                ],
+            },
+            hypertension: {
+                weekly: [
+                    "Week 1: Reduce sodium intake, practice meditation, and perform light cardio exercises.",
+                    "Week 2: Track blood pressure twice a day, eat potassium-rich foods, and avoid stress.",
+                    "Week 3: Limit alcohol intake, increase water consumption, and include aerobic exercises.",
+                ],
+                monthly: [
+                    "Month 1: Develop a DASH diet plan, consistent BP tracking, and a physical therapy routine.",
+                    "Month 2: Weekly BP reviews with the doctor, include leafy greens, and focus on deep breathing.",
+                    "Month 3: Stress management through hobbies, limit caffeine intake, and prioritize sleep.",
+                ],
+            },
+            asthma: {
+                weekly: [
+                    "Week 1: Avoid triggers like dust or pollen, use prescribed inhalers, and focus on deep breathing.",
+                    "Week 2: Maintain an air purifier, hydrate frequently, and perform light indoor yoga.",
+                    "Week 3: Regular lung function checkups, avoid cold environments, and follow breathing exercises.",
+                ],
+                monthly: [
+                    "Month 1: Ensure regular medication intake, track peak flow readings, and avoid allergens.",
+                    "Month 2: Include omega-3 fatty acids in diet, use humidifiers, and consult a pulmonologist.",
+                    "Month 3: Plan an allergy test, practice slow-paced exercises, and avoid respiratory infections.",
+                ],
+            },
+        };
+
+        // Retrieve data from localStorage
+        const data = JSON.parse(localStorage.getItem('healthData'));
+
+        if (data) {
+            const reportOutput = document.getElementById('reportOutput');
+            const disease = "diabetes"; // Replace with user-selected disease dynamically if needed
+            const plans = healthPlans[disease];
+            const duration = data.duration.toLowerCase();
+
+            // Display report
+            reportOutput.innerHTML = `
+                <h3>Report for ${data.name} (${data.age} years old)</h3>
+                <p><strong>Duration:</strong> ${data.duration.charAt(0).toUpperCase() + data.duration.slice(1)}</p>
+                <p><strong>Prescription:</strong> ${data.prescription}</p>
+                <p><strong>Health Metrics:</strong> ${data.healthMetrics}</p>
+                <p><strong>Doctor's Suggestions:</strong></p>
+                <ul>
+                    ${plans[duration]
+                        .map((plan, index) => `<li>${duration === 'weekly' ? `Week ${index + 1}` : `Month ${index + 1}`}: ${plan}</li>`)
+                        .join('')}
+                </ul>
+            `;
+        } else {
+            document.getElementById('reportOutput').innerHTML = `<p>No data found. Please go back and enter details.</p>`;
+        }
+    </script>
+</body>
+</html>
